@@ -3,8 +3,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from src.financas import (cagr, cagr_janelas, indice_sharpe, maior_queda, retorno_por_ano, retorno_total,
-                          simular_carteira, volatilidade)
+from src.financas import (ativos_com_dados, cagr, cagr_janelas, classificar_periodo, indice_sharpe, maior_queda,
+                          retorno_por_ano, retorno_total, simular_carteira, volatilidade)
 
 
 def serie(valores, inicio='2020-01-01', freq='D'):
@@ -83,3 +83,16 @@ def test_carteira_de_uma_acao_e_igual_com_e_sem_rebalanceamento():
                           index=pd.to_datetime(['2020-01-02', '2020-12-30', '2021-06-01', '2021-12-30']))
     pd.testing.assert_series_equal(simular_carteira(precos, {'A': 1}),
                                    simular_carteira(precos, {'A': 1}, rebalancear=True))
+
+
+def test_classificar_periodo_separa_as_fases_da_covid():
+    datas = pd.to_datetime(['2019-06-03', '2020-02-19', '2020-02-20', '2023-05-05', '2023-05-08', '2025-12-30'])
+    fases = classificar_periodo(datas).tolist()
+    assert fases == ['Pré-pandemia', 'Pré-pandemia', 'Pandemia', 'Pandemia', 'Pós-pandemia', 'Pós-pandemia']
+
+
+def test_ativos_com_dados_ignora_ativo_sem_preco_no_periodo():
+    precos = pd.DataFrame({'A': [1.0, 2.0, 3.0], 'B': [1.0, 2.0, np.nan]},
+                          index=pd.to_datetime(['2022-12-28', '2022-12-29', '2023-01-02']))
+    assert ativos_com_dados(precos) == ['A']
+    assert ativos_com_dados(precos.iloc[:2]) == ['A', 'B']

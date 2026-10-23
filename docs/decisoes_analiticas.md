@@ -14,6 +14,8 @@ Os números vêm das saídas do notebook [`Notebooks/Análise do Comportamento d
 | [DA-04](#da-04--cdi-e-bova11-como-referências) | CDI e BOVA11 como referências |
 | [DA-05](#da-05--dias-extremos-mantidos) | Dias extremos mantidos |
 | [DA-06](#da-06--pesos-iguais-com-rebalanceamento-como-alternativa) | Pesos iguais, com rebalanceamento como alternativa |
+| [DA-07](#da-07--extensão-até-2025-em-uma-seção-própria-com-4-ações) | Extensão até 2025 em uma seção própria, com 4 ações |
+| [DA-08](#da-08--três-fases-da-covid) | Três fases da Covid |
 
 ---
 
@@ -64,3 +66,19 @@ Os números vêm das saídas do notebook [`Notebooks/Análise do Comportamento d
 - **Alternativas consideradas:** otimização de pesos (exigiria prever retornos futuros).
 - **Consequência:** rebalanceando, R$ 62.147 com queda máxima de −62%, contra R$ 42.750 e −87% sem rebalancear.
 - **Onde está:** `simular_carteira(rebalancear=True)` em `src/financas.py`; item 7 da Fase 03.
+
+## DA-07 — Extensão até 2025 em uma seção própria, com 4 ações
+
+- **Contexto:** o usuário pediu a análise até 2025. A GOL não tem dados públicos gratuitos depois de 29/12/2022: depois da recuperação judicial, a ação virou GOLL54, passou a valer menos de R$ 0,01 e está saindo da bolsa (o Yahoo Finance não tem o ticker).
+- **Decisão:** manter a análise principal (2015–2022, 5 ações) comparável com a versão original e acrescentar a extensão até 2025 no item 1.2 da Fase 04, com uma **carteira de 4 ações** (25% em cada), em bases novas (`*_2015_2025.csv`). As bases antigas não mudam, para que a versão original continue reproduzível.
+- **Alternativas consideradas:** manter a GOL até 2022 e redistribuir o peso dela depois (mistura duas carteiras); obter os dados da GOL em fonte paga.
+- **Consequência:** 2023–2025 funcionam como teste fora do tempo; a vantagem da carteira não se repetiu (R$ 9.595 x R$ 15.395 do BOVA11). O download novo ajusta o preço da CVC pelos aumentos de capital de 2020 a 2022, então os números da CVC até 2022 diferem um pouco dos da análise principal.
+- **Onde está:** item 1.2 da Fase 04; `ativos_com_dados` em `src/financas.py`; no app, a GOL fica desativada em períodos que terminam depois de 2022.
+
+## DA-08 — Três fases da Covid
+
+- **Contexto:** para comparar o comportamento antes e depois da Covid, é preciso definir datas objetivas.
+- **Decisão:** **pré-pandemia** até 19/02/2020 (véspera da queda da bolsa), **pandemia** de 20/02/2020 a 05/05/2023 (fim da emergência de saúde declarado pela OMS) e **pós-pandemia** até 30/12/2025. Em cada fase, a carteira é comprada no primeiro pregão da fase.
+- **Alternativas consideradas:** pandemia só em 2020–2021 (fase mais aguda).
+- **Consequência:** carteira com +75,0% ao ano antes, −8,6% durante e −1,9% depois; BOVA11 com +18,3%, −2,4% e +17,8%.
+- **Onde está:** `PERIODOS_COVID` e `classificar_periodo` em `src/financas.py`; item 1.2 da Fase 04; tabela por fase no app.

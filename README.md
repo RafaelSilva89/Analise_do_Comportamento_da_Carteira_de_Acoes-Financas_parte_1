@@ -1,4 +1,4 @@
-# 📈 Análise do Comportamento de uma Carteira de Ações (2015–2022)
+# 📈 Análise do Comportamento de uma Carteira de Ações (2015–2022, estendida até 2025)
 
 **Escolher ações valeu mais a pena do que investir no índice? Quanto, e por quê?**
 
@@ -15,7 +15,8 @@
 | Crescimento anual | **19,9% ao ano** na carteira x **10,6%** no BOVA11 x **8,6%** no CDI |
 | O outro lado | A carteira chegou a **R$ 259 mil** (nov/2020) e caiu para **R$ 33 mil** (jul/2022) |
 | Principal descoberta | **85% do resultado veio de 2 ações** (MGLU e WEGE). **Rebalancear todo ano** teria rendido R$ 62 mil, com muito menos risco |
-| Entrega | Relatório + tabela de indicadores + **app Streamlit** para simular carteiras + **testes automatizados** |
+| Até 2025 e a Covid | Com 4 ações (sem a GOL), a carteira cresceu **75% ao ano** antes da pandemia e **perdeu 1,9% ao ano** depois (2023–2025), enquanto o BOVA11 ganhou **17,8%** |
+| Entrega | Relatório + tabela de indicadores + **app Streamlit** (com datas de início e término de 2015 a 2025) + **16 testes automatizados** (com CI) |
 
 ---
 
@@ -79,19 +80,24 @@ Analise_do_Comportamento_da_Carteira_de_Acoes-Financas_parte_1/
 │   ├── acoes.csv                          # preços de fechamento diários (Yahoo Finance)
 │   ├── acoes_ajustado.csv                 # preços ajustados por dividendos (Yahoo Finance)
 │   ├── cdi.csv                            # taxa diária do CDI (Banco Central)
+│   ├── acoes_2015_2025.csv                # base estendida até 2025 (a GOL só até 29/12/2022)
+│   ├── acoes_ajustado_2015_2025.csv       # base estendida, com dividendos
+│   ├── cdi_2015_2025.csv                  # CDI até 2025
 │   └── indicadores_desempenho.csv         # indicadores calculados (gerado no notebook)
 ├── Imagens/                               # gráficos gerados pelo notebook
 ├── Notebooks/
 │   ├── Análise do Comportamento da Carteira de Ações - Finanças parte 1.ipynb       # versão original
 │   └── Análise do Comportamento da Carteira de Ações - Finanças parte 1 - v2.ipynb  # versão reorganizada (CRISP-DM)
 ├── docs/
-│   └── decisoes_analiticas.md             # registro das decisões do projeto (DA-01 a DA-06)
+│   └── decisoes_analiticas.md             # registro das decisões do projeto (DA-01 a DA-08)
 ├── src/
 │   ├── financas.py                        # retornos, CAGR, Sharpe, maior queda e simulação de carteira
 │   ├── estatistica.py                     # testes das hipóteses (com tamanho de efeito) e regra do IQR
 │   └── graficos.py                        # funções de gráficos
 ├── tests/
-│   └── test_financas.py                   # testes automatizados (pytest)
+│   ├── test_financas.py                   # testes das funções financeiras (pytest)
+│   └── test_app.py                        # abre o app e confere datas e a GOL (AppTest)
+├── .github/workflows/testes.yml           # roda os testes a cada push (GitHub Actions)
 ├── app.py                                 # app Streamlit (simulador de carteira)
 ├── requirements.txt
 └── README.md
@@ -245,13 +251,31 @@ pytest
 <img src="Imagens/Simulacao%20R%24%2010%20mil.png" width="700px">
 </div>
 
+**Até 2025: antes, durante e depois da Covid**
+
+A análise foi estendida até **30/12/2025**, com uma carteira de **4 ações** (25% em cada). A GOL ficou de fora: depois da recuperação judicial, a ação virou GOLL54, passou a valer menos de R$ 0,01 e está saindo da bolsa, sem dados públicos depois de 2022.
+
+<div align="center">
+<img src="Imagens/Carteira%202015-2025%20Covid.png" width="850px">
+</div>
+
+| CAGR (Sharpe) | Pré-pandemia (até 19/02/2020) | Pandemia (até 05/05/2023) | Pós-pandemia (até 30/12/2025) |
+|---|---|---|---|
+| **Carteira (4 ações)** | **+75,0%** (1,89) | −8,6% (−0,38) | **−1,9%** (−0,50) |
+| **BOVA11** | +18,3% (0,38) | −2,4% (−0,32) | **+17,8%** (0,34) |
+| **CDI** | +9,7% | +7,3% | +12,7% |
+
+- Nos 11 anos, R$ 10.000 na carteira viraram **R$ 40.537**, contra **R$ 33.432** no BOVA11; rebalanceando todo ano, **R$ 88.428**.
+- ❌ **O teste fora do tempo:** quem investisse R$ 10.000 em jan/2023, seguindo a conclusão de 2022, teria **R$ 9.595** no fim de 2025, contra **R$ 15.395** no BOVA11. MGLU (−61,3%) e CVC (−44,8%) anularam a alta de TOTS (+62,5%) e WEGE (+27,3%).
+- 🧪 Nos retornos diários, as fases quase não se distinguem (Kruskal-Wallis com ε² = 0,003): a diferença aparece no acumulado.
+
 ## 11. App interativo (Streamlit)
 
 Um **simulador de carteira** para testar outras combinações:
 
-1. Escolha o **valor investido**, o **período** e o **peso de cada ação**.
+1. Escolha o **valor investido**, a **data de início** e a **data de término** (de 2015 a 2025) e o **peso de cada ação**. A GOL só fica disponível em períodos que terminam até 29/12/2022.
 2. Opcional: **inclua dividendos** e **rebalanceie todo ano**.
-3. Veja o **valor final**, o **CAGR**, o **Índice de Sharpe** e a evolução da carteira comparada ao **BOVA11** e ao **CDI**.
+3. Veja o **valor final**, o **CAGR**, o **Índice de Sharpe**, a evolução da carteira comparada ao **BOVA11** e ao **CDI** e uma tabela **antes, durante e depois da Covid**.
 
 ```bash
 streamlit run app.py
@@ -274,7 +298,8 @@ A versão original foi mantida no repositório para mostrar a evolução. Na v2:
 | Só "comprar e manter" | Também **rebalanceamento anual** | A estratégia simples que mais melhorou o resultado |
 | Resultado de uma única data de início | **Janelas de 3 anos** | Mostra que o resultado depende do momento de entrada |
 | Dados baixados da internet a cada execução | Lê os CSVs salvos (download opcional) | Resultado reproduzível |
-| Código repetido para cada ação | Funções em `src/` + **testes com pytest** | Código mais limpo, reutilizado no app e testado |
+| Código repetido para cada ação | Funções em `src/` + **testes com pytest** e CI | Código mais limpo, reutilizado no app e testado |
+| Período fixo de 2015 a 2022 | **Extensão até 2025**, com as fases antes, durante e depois da Covid | Testa as conclusões com dados novos: a vantagem não se repetiu |
 
 ## 13. Insights
 
@@ -284,6 +309,7 @@ A versão original foi mantida no repositório para mostrar a evolução. Na v2:
 4. **O CDI foi difícil de bater com segurança:** 8,6% ao ano sem oscilação. O BOVA11 entregou só 2 pontos a mais, com quedas de até 47%.
 5. **A forma de calcular importa:** a média dos retornos diários pode mostrar lucro onde houve prejuízo. Para comparar investimentos, use o **CAGR**.
 6. **Volatilidade não é sinônimo de retorno:** a GOL, a mais volátil, teve Sharpe negativo; a WEGE teve o melhor Sharpe (0,51).
+7. **A vantagem não sobreviveu à Covid:** antes da pandemia, a carteira cresceu 75% ao ano; de 2023 a 2025, perdeu 1,9% ao ano, enquanto o BOVA11 ganhou 17,8%. Nos 11 anos, rebalancear todo ano continua sendo a melhor estratégia.
 
 ## 14. Limites
 
@@ -292,12 +318,13 @@ A versão original foi mantida no repositório para mostrar a evolução. Na v2:
 - **Viés de retrospectiva:** as ações foram escolhidas olhando para trás. Em 2015, ninguém sabia que MGLU e WEGE iriam disparar.
 - **Rentabilidade passada não garante rentabilidade futura.**
 - **Poucos ativos:** com 6 ativos, os testes entre ações (como risco × retorno) têm pouca força estatística.
+- **Extensão sem a GOL:** a carteira de 2015–2025 tem 4 ações, então não é diretamente comparável à da análise principal.
 
 ## 15. Próximos passos
 
 1. **Aprofundar o risco** (variância, covariância e correlação), feito na **[parte 2](https://github.com/RafaelSilva89/Calculo_do_risco_das_acoes-Financas_parte_2)** deste estudo.
 2. **Considerar custos**: corretagem, impostos e taxa de administração.
-3. **Atualizar os dados** até a data atual (substituindo o ticker da GOL) e verificar se as conclusões se mantêm.
+3. **Atualizar os dados a cada ano** (a base já vai até 2025) e acompanhar se a carteira volta a superar o BOVA11.
 4. **Testar outras regras de carteira**, como pesos pelo risco.
 5. **Publicar o app** no Streamlit Community Cloud e adicionar um GIF de demonstração.
 
