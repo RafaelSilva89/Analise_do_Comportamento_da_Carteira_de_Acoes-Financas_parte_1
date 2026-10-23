@@ -84,8 +84,11 @@ Analise_do_Comportamento_da_Carteira_de_Acoes-Financas_parte_1/
 ├── Notebooks/
 │   ├── Análise do Comportamento da Carteira de Ações - Finanças parte 1.ipynb       # versão original
 │   └── Análise do Comportamento da Carteira de Ações - Finanças parte 1 - v2.ipynb  # versão reorganizada (CRISP-DM)
+├── docs/
+│   └── decisoes_analiticas.md             # registro das decisões do projeto (DA-01 a DA-06)
 ├── src/
 │   ├── financas.py                        # retornos, CAGR, Sharpe, maior queda e simulação de carteira
+│   ├── estatistica.py                     # testes das hipóteses (com tamanho de efeito) e regra do IQR
 │   └── graficos.py                        # funções de gráficos
 ├── tests/
 │   └── test_financas.py                   # testes automatizados (pytest)
@@ -119,7 +122,7 @@ pytest
 | Fase | O que foi feito |
 |---|---|
 | **01. Entendimento do negócio** | Definição da pergunta e dos indicadores |
-| **02. Preparação dos dados** | Coleta, conferência da base, análise exploratória com 6 hipóteses e cálculo dos retornos diários |
+| **02. Preparação dos dados** | Coleta, conferência da base, dias extremos pela regra do IQR, análise exploratória com 6 hipóteses (com testes estatísticos) e cálculo dos retornos diários |
 | **03. Indicadores e carteira** | Comparação de 3 formas de calcular o retorno anual e montagem da carteira |
 | **04. Avaliação** | Carteira x BOVA11 x CDI, Índice de Sharpe, janelas de 3 anos e contribuição de cada ação |
 | **05. Implantação** | Tabela de indicadores, simulação de R$ 10 mil e app Streamlit |
@@ -159,6 +162,8 @@ pytest
 </div>
 
 - A **GOL** foi a ação que mais oscilou (77% ao ano) e teve resultado **negativo**. A **WEGE**, com oscilação moderada, teve o 2º melhor resultado.
+
+> 🧪 **Testes estatísticos:** nos **retornos diários**, a carteira não se diferencia do BOVA11 (Wilcoxon pareado, p = 0,77), e a MGLU não se diferencia da WEGE (p = 0,65). A vantagem da carteira é fruto do **efeito composto ao longo de 8 anos**, que o ruído do dia a dia esconde. Pela regra do IQR, de 3% a 6% dos pregões são dias extremos (numa curva normal seriam ~0,7%): o mercado tem **"caudas gordas"**.
 
 ## 8. Construção da solução
 
@@ -286,6 +291,7 @@ A versão original foi mantida no repositório para mostrar a evolução. Na v2:
 - **Sem custos:** não considera corretagem, impostos nem a taxa de administração do BOVA11 (nem os custos de rebalancear).
 - **Viés de retrospectiva:** as ações foram escolhidas olhando para trás. Em 2015, ninguém sabia que MGLU e WEGE iriam disparar.
 - **Rentabilidade passada não garante rentabilidade futura.**
+- **Poucos ativos:** com 6 ativos, os testes entre ações (como risco × retorno) têm pouca força estatística.
 
 ## 15. Próximos passos
 
